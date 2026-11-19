@@ -128,6 +128,21 @@ jobs:
       - name: 生成 Android 工程
         run: pnpm tauri android init --ci
 
+      - name: 补齐 buildSrc 插件仓库源（Plugin Portal 不再代理 Kotlin 传递依赖）
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/fix-buildsrc-repos.gradle <<'GROOVY'
+          beforeSettings { settings ->
+              settings.pluginManagement {
+                  repositories {
+                      gradlePluginPortal()
+                      mavenCentral()
+                      google()
+                  }
+              }
+          }
+          GROOVY
+
       - name: 编译 APK（按 ABI 分包）
         run: pnpm tauri android build --apk --split-per-abi --target aarch64 armv7 x86_64
 
